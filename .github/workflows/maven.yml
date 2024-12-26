@@ -31,12 +31,12 @@ jobs:
       run: mvn -B package --file pom.xml
 
     - name: Naming jar file
-      run: mv ./target/*.jar ./app.jar
+      run: mv ./target/*.jar ./target/app.jar
 
     - name: Check jar file
       run: ls ./target
 
     - uses: actions/upload-artifact@v4
       with:
-        name: backend
-        path: backend
+        name: app.jar
+        path: ./target/*.jar
