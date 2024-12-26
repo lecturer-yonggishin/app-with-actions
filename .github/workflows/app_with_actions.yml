@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  CI:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,8 +42,8 @@ jobs:
         name: app
         path: ./target/*.jar
       
-  deploy:
-    needs: build
+  CD:
+    needs: CI
     runs-on: ubuntu-latest
 
     steps:
