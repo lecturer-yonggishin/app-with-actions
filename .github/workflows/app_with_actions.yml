@@ -21,12 +21,17 @@ jobs:
         
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+      
+    - name: Naming jar file
+      run: mv ./target/*.jar ./target/app.jar
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
+    - name: Check jar file
+      run: ls ./target
+
+    - uses: actions/upload-artifact@v4
       with:
         name: app
-        path: target/*.jar
+        path: ./target/*.jar
       
   deploy:
     needs: build
@@ -48,7 +53,7 @@ jobs:
         target: "/home/ubuntu/app"
        
     - name: Execute deployment script
-      uses: appleboy/ssh-action@v1.2.0
+      uses: appleboy/ssh-action@v1.0.7
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
