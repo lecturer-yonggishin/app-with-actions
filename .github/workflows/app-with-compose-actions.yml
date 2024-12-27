@@ -61,12 +61,13 @@ jobs:
     - name: Execute deployment script
       uses: appleboy/ssh-action@v1.2.0
       env:
-        COMPOSE: "/home/ubuntu/app/docker-compose.yml"
+        COMPOSE: "/home/ubuntu/docker-compose.yml"
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
+            docker 
             sudo docker-compose -f $COMPOSE down
             sudo docker pull ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions
             sudo docker-compose -f $COMPOSE up
