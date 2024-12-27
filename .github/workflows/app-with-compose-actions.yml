@@ -69,4 +69,4 @@ jobs:
         script: |
             sudo docker-compose -f $COMPOSE down
             sudo docker pull ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions
-            sudo docker-compose -f $COMPOSE up -d
+            sudo docker-compose -f $COMPOSE up
