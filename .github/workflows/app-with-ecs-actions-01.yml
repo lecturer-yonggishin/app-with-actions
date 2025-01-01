@@ -1,12 +1,17 @@
-name: Build and Push Docker Image To AWS ECR
+name: User source Deploy to Amazon ECR & ECS
 on:
-  workflow_dispatch
-  # push:
-  #   branches:
-  #     - main
-
+  push:
+    branches:
+      - main
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: first-ecr
+  ECS_SERVICE: first-ecs-service-test-001 
+  ECS_CLUSTER: FirstClusterTest01
+  CONTAINER_NAME: first-ecs-container-test-01
+  
 jobs:
-  build-push-image:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
@@ -57,3 +62,30 @@ jobs:
       - name: Push Docker image to Amazon ECR
         run: |
           docker push ${{ secrets.ECR_PRIVATE_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/${{ secrets.ECR_PRIVATE_REPOSITORY }}:latest
+
+  cd:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Retrieve most recent ECS task definition JSON file
+      id: retrieve-task-def
+      run: |
+        aws ecs describe-task-definition --task-definition private-user-task --query taskDefinition > task-definition.json
+        cat task-definition.json
+        echo "::set-output name=task-def-file::task-definition.json"
+        
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ steps.retrieve-task-def.outputs.task-def-file }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+  
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
