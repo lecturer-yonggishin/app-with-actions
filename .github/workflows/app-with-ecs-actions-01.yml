@@ -63,7 +63,7 @@ jobs:
           IMAGE_TAG: latest
         run: |
           docker build -t ${{ secrets.ECR_PRIVATE_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/${{ secrets.ECR_PRIVATE_REPOSITORY }}:latest .
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Push Docker image to Amazon ECR
         run: |
@@ -74,18 +74,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Retrieve most recent ECS task definition JSON file
-      id: retrieve-task-def
-      run: |
-        aws ecs describe-task-definition --task-definition first-ecs-task-test-01 --query taskDefinition > task-definition.json
-        cat task-definition.json
-        echo "::set-output name=task-def-file::task-definition.json"
+    # - name: ECS task definition JSON file
+    #   id: retrieve-task-def
+    #   run: |
+    #     ${{ secrets.TASK }} >> task-definition.json
         
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: ${{ steps.retrieve-task-def.outputs.task-def-file }}
+        task-definition: ${{ secret.TASK }}
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
   
